@@ -76,7 +76,7 @@ public class mainScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new choosingAPresenter();
+                new choosingAPresenterSetting();
             }
         });
 
