@@ -47,24 +47,28 @@ public class Main extends Frame {
         btn1.setOpaque(false);
         btn1.setContentAreaFilled(false);
         btn1.setBorderPainted(false);
+        btn1.setFocusPainted(false);
 
         btn2.setOpaque(false);
         btn2.setContentAreaFilled(false);
         btn2.setBorderPainted(false);
+        btn2.setFocusPainted(false);
 
         btn3.setOpaque(false);
         btn3.setContentAreaFilled(false);
         btn3.setBorderPainted(false);
+        btn3.setFocusPainted(false);
 
         btn4.setOpaque(false);
         btn4.setContentAreaFilled(false);
         btn4.setBorderPainted(false);
+        btn4.setFocusPainted(false);
 
         btn1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new pickASeat();
+                new PickASeatSetting();
             }
         });
 
@@ -80,7 +84,7 @@ public class Main extends Frame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new determineRole();
+                new DetermineRole();
             }
         });
 
@@ -88,7 +92,7 @@ public class Main extends Frame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new choosingAPresenterSetting();
+                new ChoosingAPresenterSetting();
             }
         });
 

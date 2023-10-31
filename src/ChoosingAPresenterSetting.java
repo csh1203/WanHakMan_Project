@@ -10,11 +10,11 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 
-public class choosingAPresenterSetting {
+public class ChoosingAPresenterSetting {
     public static void main(String args[]){
-        new choosingAPresenterSetting();
+        new ChoosingAPresenterSetting();
     }
-    public choosingAPresenterSetting() {
+    public ChoosingAPresenterSetting() {
         Color backgroud = new Color(0xA1A1A1);
         Dimension dim = new Dimension(1280, 832);
 
@@ -138,18 +138,20 @@ public class choosingAPresenterSetting {
                 String ExceptPerson = inputExcept.getText();
 
                 ArrayList<Integer> ExpectPersonArr = new ArrayList<>();
-                String ch = "";
-                for(int i = 0; i<ExceptPerson.length(); i++){
-                    if(ExceptPerson.charAt(i) == ','){
-                        ExpectPersonArr.add(Integer.parseInt(ch));
-                        ch = "";
-                    }else{
-                        ch += ExceptPerson.charAt(i);
+                if(ExceptPerson.length() == 0){
+                    ExpectPersonArr.add(-1);
+                }else{
+                    String ch = "";
+                    for(int i = 0; i<ExceptPerson.length(); i++){
+                        if(ExceptPerson.charAt(i) == ','){
+                            ExpectPersonArr.add(Integer.parseInt(ch));
+                            ch = "";
+                        }else{
+                            ch += ExceptPerson.charAt(i);
+                        }
                     }
+                    ExpectPersonArr.add(Integer.parseInt(ch));
                 }
-                ExpectPersonArr.add(Integer.parseInt(ch));
-                System.out.println(ExceptPerson);
-                System.out.println(ExpectPersonArr);
 
                 if (Allperson.isEmpty()) {
                     JOptionPane.showMessageDialog(frame, "학생 수를 입력해주세요.");
@@ -157,6 +159,8 @@ public class choosingAPresenterSetting {
                     JOptionPane.showMessageDialog(frame, "발표 인원을 입력해주세요.");
                 }else if(Integer.parseInt(Allperson) < Integer.parseInt(PresenterPerson)){
                     JOptionPane.showMessageDialog(frame, "발표 인원을 다시 입력해주세요.");
+                }else if(Integer.parseInt(Allperson) < Integer.parseInt(PresenterPerson) + ExpectPersonArr.size()){
+                    JOptionPane.showMessageDialog(frame, "학생 수를 다시 입력해주세요.");
                 }else{
                     frame.dispose();
                     new ChoosingAPresenterMain(Allperson, PresenterPerson, ExpectPersonArr);
