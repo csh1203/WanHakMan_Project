@@ -1,15 +1,15 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 
-public class choosingAPresenterMain {
+public class ChoosingAPresenterMain {
 //    public static void main(String args[]){
 //        new choosingAPresenterMain();
 //    }
-    public choosingAPresenterMain(String allPerson, String presentPerson, String exceptPerson) {
+    public ChoosingAPresenterMain(String allPerson, String presentPerson, ArrayList<Integer> exceptPerson) {
         // JFrame 생성
         JFrame frame = new JFrame("발표자 정하기");
         frame.setBounds(100, 100, 1280, 832);
@@ -22,37 +22,11 @@ public class choosingAPresenterMain {
         resultFrame.setIcon(new ImageIcon("img/presenterResultFrame.png"));
         frame.getContentPane().add(resultFrame);
 
-        int minValue = 1;
-        int maxValue = Integer.parseInt(allPerson);
-        int excludedNumber;
-        if(exceptPerson.isEmpty()) excludedNumber = -1;
-        else excludedNumber = Integer.parseInt(exceptPerson);
-        int numberOfRandomNumbers = Integer.parseInt(presentPerson);
-
-        Set<Integer> randomNumbers = new HashSet<>();
-
-        Random random = new Random();
-
-        while (randomNumbers.size() < numberOfRandomNumbers) {
-            int randomNumber = generateRandomNumber(minValue, maxValue, random);
-            if (randomNumber != excludedNumber) {
-                randomNumbers.add(randomNumber);
-            }
-        }
-        ArrayList<Integer> sortedList = new ArrayList<>(randomNumbers);
-        Collections.sort(sortedList);
-        String result = sortedList.toString().substring(1, sortedList.toString().length() - 1);
-
-        JLabel resultLabel = new JLabel(result);
+        JLabel resultLabel = new JLabel();
         resultLabel.setBounds(0, 134, 851, 123);
         resultLabel.setFont(new Font("Noto Sans", Font.PLAIN, 80)); // 폰트 및 글자 크기 설정
         resultLabel.setHorizontalAlignment(JLabel.CENTER); // 텍스트를 가운데에 정렬
         resultFrame.add(resultLabel);
-
-//        JLabel makePresenterBtn = new JLabel();
-//        makePresenterBtn.setBounds(397, 606, 485, 92);
-//        makePresenterBtn.setIcon(new ImageIcon("img/makePresenterBtn.png"));
-//        frame.add(makePresenterBtn);
 
         ImageIcon makePresenterBtnImg = new ImageIcon("img/makePresenterBtn.png");
         JButton makePresenterBtn = new JButton(makePresenterBtnImg);
@@ -67,7 +41,8 @@ public class choosingAPresenterMain {
         makePresenterBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                generateRandomNumber(minValue, maxValue, random);
+                List<Integer> randomNumbers = generateRandomNumbers(1, Integer.parseInt(allPerson), Integer.parseInt(presentPerson), exceptPerson);
+                resultLabel.setText(randomNumbers.toString().substring(1, randomNumbers.toString().length()-1));
             }
         });
         frame.add(makePresenterBtn);
@@ -76,8 +51,16 @@ public class choosingAPresenterMain {
         frame.setVisible(true);
 
     }
-    // 주어진 범위 내에서 랜덤 숫자 생성
-    public static int generateRandomNumber(int minValue, int maxValue, Random random) {
-        return random.nextInt(maxValue - minValue + 1) + minValue;
+
+    private static List<Integer> generateRandomNumbers(int min, int max, int count, ArrayList<Integer> exceptPerson) {
+        List<Integer> numbers = new ArrayList<>();
+        Random rand = new Random();
+        while (numbers.size() < count) {
+            int randomNum = rand.nextInt(max - min + 1) + min;
+            if (!exceptPerson.contains(randomNum) && !numbers.contains(randomNum)) {
+                numbers.add(randomNum);
+            }
+        }
+        return numbers;
     }
 }

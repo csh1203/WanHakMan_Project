@@ -2,15 +2,13 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicCheckBoxUI;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
-import javax.swing.text.PlainDocument;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 
 public class choosingAPresenterSetting {
     public static void main(String args[]){
@@ -89,11 +87,13 @@ public class choosingAPresenterSetting {
         inputExcept.setBounds(88, 290, 119, 29);
         inputExcept.setBorder(new LineBorder(backgroud));
         inputExcept.setEnabled(false);
-        setNumberOnlyFilter(inputExcept); // 텍스트 필드에 숫자만 입력되도록 필터 설정
+        PlainDocument doc = (PlainDocument) inputExcept.getDocument();
+        doc.setDocumentFilter(new NumberWithCommaDocumentFilter());
+//        setNumberOnlyFilter(inputExcept); // 텍스트 필드에 숫자만 입력되도록 필터 설정
         inputExcept.setFont(new Font("Noto Sans", Font.PLAIN, 21)); // 폰트 및 글자 크기 설정
         backgroundImg.add(inputExcept);
 
-        JLabel bun = new JLabel("명");
+        JLabel bun = new JLabel("번");
         bun.setBounds(219, 290, 25, 29);
         bun.setFont(new Font("Noto Sans", Font.PLAIN, 25)); // 폰트 및 글자 크기 설정
         bun.setForeground(backgroud); // 글자 색상 설정
@@ -137,6 +137,20 @@ public class choosingAPresenterSetting {
                 String PresenterPerson = inputPresenterCnt.getText();
                 String ExceptPerson = inputExcept.getText();
 
+                ArrayList<Integer> ExpectPersonArr = new ArrayList<>();
+                String ch = "";
+                for(int i = 0; i<ExceptPerson.length(); i++){
+                    if(ExceptPerson.charAt(i) == ','){
+                        ExpectPersonArr.add(Integer.parseInt(ch));
+                        ch = "";
+                    }else{
+                        ch += ExceptPerson.charAt(i);
+                    }
+                }
+                ExpectPersonArr.add(Integer.parseInt(ch));
+                System.out.println(ExceptPerson);
+                System.out.println(ExpectPersonArr);
+
                 if (Allperson.isEmpty()) {
                     JOptionPane.showMessageDialog(frame, "학생 수를 입력해주세요.");
                 }else if(PresenterPerson.isEmpty()){
@@ -145,7 +159,7 @@ public class choosingAPresenterSetting {
                     JOptionPane.showMessageDialog(frame, "발표 인원을 다시 입력해주세요.");
                 }else{
                     frame.dispose();
-                    new choosingAPresenterMain(Allperson, PresenterPerson, ExceptPerson);
+                    new ChoosingAPresenterMain(Allperson, PresenterPerson, ExpectPersonArr);
                 }
             }
         });
@@ -228,6 +242,34 @@ class CustomCheckboxUI extends BasicCheckBoxUI {
             // 커스텀 아이콘을 그립니다.
             checkIcon.paintIcon(c, g, 3, 3);
         }
+    }
+}
+
+class NumberWithCommaDocumentFilter extends DocumentFilter {
+    @Override
+    public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+        Document doc = fb.getDocument();
+        StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+        sb.insert(offset, string);
+
+        if (isValidInput(sb.toString())) {
+            super.insertString(fb, offset, string, attr);
+        }
+    }
+
+    @Override
+    public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+        Document doc = fb.getDocument();
+        StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+        sb.replace(offset, offset + length, text);
+
+        if (isValidInput(sb.toString())) {
+            super.replace(fb, offset, length, text, attrs);
+        }
+    }
+
+    private boolean isValidInput(String input) {
+        return input.matches("^[0-9,]*$");
     }
 }
 
