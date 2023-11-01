@@ -2,7 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.Array;
 import java.nio.channels.FileLock;
+import java.util.*;
+import java.util.List;
 
 public class PickASeatMain {
     public static void main(String args[]){
@@ -66,7 +71,6 @@ public class PickASeatMain {
         seatHeight = seatHeight * 75 + (seatHeight - 1) * 16;
         JPanel seat = new JPanel();
         seat.setLayout(new GridLayout(1, division));
-//        seat.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 30));
         seat.setBounds(0, 259, 1280, seatHeight);
 
         int[] divisionCnt = new int[division];
@@ -83,9 +87,13 @@ public class PickASeatMain {
             int repeat = (people / (division * 2)) * 2 + plus;
             divisionCnt[i] = repeat;
         }
-//        JOptionPane.showMessageDialog(frame, divisionCnt);
-//        System.out.println(divisionCnt[0] + " "+  divisionCnt[1] + " " +  divisionCnt[2]);
 
+        // 고정할 숫자의 위치를 ArrayList로 지정
+        ArrayList<Integer> fixedNumbers = new ArrayList<>();
+
+
+        JLabel[] tables = new JLabel[people];
+        CustomToggleButton[] customToggleButtons = new CustomToggleButton[people];
         for(int i = 0; i<divisionCnt.length; i++){
 
             int cnt = 0;
@@ -110,22 +118,195 @@ public class PickASeatMain {
                     cnt++;
                     if(cnt > repeat) break;
                     String tableNumber = (k + (j * 6))+"";
-                    JLabel table = new JLabel(tableNumber);
-                    table.setIcon(new ImageIcon("img/sm_table.png"));
-                    table.setHorizontalTextPosition(JLabel.CENTER);
-                    table.setVerticalTextPosition(JLabel.CENTER);
-                    table.setForeground(fontColor);
-                    table.setFont(new Font("Noto Sans", Font.BOLD, 20)); // 폰트 및 글자 크기 설정
-                    divisions.add(table);
+                    tables[Integer.parseInt(tableNumber) - 1] = new JLabel(tableNumber);
+                    tables[Integer.parseInt(tableNumber) - 1].setIcon(new ImageIcon("img/sm_table.png"));
+                    tables[Integer.parseInt(tableNumber) - 1].setHorizontalTextPosition(JLabel.CENTER);
+                    tables[Integer.parseInt(tableNumber) - 1].setVerticalTextPosition(JLabel.CENTER);
+                    tables[Integer.parseInt(tableNumber) - 1].setForeground(fontColor);
+                    tables[Integer.parseInt(tableNumber) - 1].setFont(new Font("Noto Sans", Font.BOLD, 20)); // 폰트 및 글자 크기 설정
+
+                    customToggleButtons[Integer.parseInt(tableNumber) - 1] = new CustomToggleButton("",  tableNumber, fixedNumbers);
+                    customToggleButtons[Integer.parseInt(tableNumber) - 1].setBounds(11, 13, 20, 20);
+                    customToggleButtons[Integer.parseInt(tableNumber) - 1].setOpaque(false);
+                    customToggleButtons[Integer.parseInt(tableNumber) - 1].setContentAreaFilled(false);
+                    customToggleButtons[Integer.parseInt(tableNumber) - 1].setBorderPainted(false);
+                    customToggleButtons[Integer.parseInt(tableNumber) - 1].setFocusPainted(false);
+                    customToggleButtons[Integer.parseInt(tableNumber) - 1].setForeground(new Color(0, 0, 0, 0));
+
+                    tables[Integer.parseInt(tableNumber) - 1].add(customToggleButtons[Integer.parseInt(tableNumber) - 1]);
+                    divisions.add(tables[Integer.parseInt(tableNumber) - 1]);
                 }
             }
-//            seat.add(divisions);
             l.add(divisions);
             seat.add(l);
         }
         frame.add(seat);
 
+        ImageIcon seatChangeImg = new ImageIcon("img/seatChangeBtn.png");
+        JButton seatChangeBtn = new JButton(seatChangeImg);
+        seatChangeBtn.setBounds(942, 710, 193, 53);
+        seatChangeBtn.setOpaque(false);
+        seatChangeBtn.setContentAreaFilled(false);
+        seatChangeBtn.setBorderPainted(false);
+        seatChangeBtn.setFocusPainted(false);
+        frame.add(seatChangeBtn);
+
+
+        seatChangeBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[] numbers = new int[people]; // 원하는 숫자 범위
+                for(int i = 0; i<people; i++){
+                    numbers[i] = Integer.parseInt(tables[i].getText());
+                }
+
+                // 숫자를 섞는 함수 호출
+                List<Integer> shuffledNumbers = shuffleNumbers(numbers, fixedNumbers);
+
+                // 섞인 숫자 출력
+                for (int i = 0; i<shuffledNumbers.size(); i++) {
+                    tables[i].setText(shuffledNumbers.get(i).toString());
+                    customToggleButtons[i].setText(shuffledNumbers.get(i).toString());
+                }
+            }
+        });
+
+        ImageIcon seatSaveImg = new ImageIcon("img/seatSaveBtn.png");
+        JButton seatSaveBtn = new JButton(seatSaveImg);
+        seatSaveBtn.setBounds(1145, 710,93, 53);
+        seatSaveBtn.setOpaque(false);
+        seatSaveBtn.setContentAreaFilled(false);
+        seatSaveBtn.setBorderPainted(false);
+        seatSaveBtn.setFocusPainted(false);
+        frame.add(seatSaveBtn);
+
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    public static List<Integer> shuffleNumbers(int[] numberRange, List<Integer> excludeNumbers) {
+        List<Integer> availableNumbers = new ArrayList<>();
+
+        // 제외할 번호가 있는 index
+        ArrayList<Integer> exceptIndex = new ArrayList<>();
+        for(int i = 0; i<excludeNumbers.size(); i++){
+            for(int j = 0; j<numberRange.length; j++){
+                if(excludeNumbers.get(i) == numberRange[j]){
+                    exceptIndex.add(j);
+                }
+            }
+        }
+
+        for(int i = 0; i<exceptIndex.size() - 1; i++){
+            for(int j = i + 1; j<exceptIndex.size(); j++){
+                if(exceptIndex.get(i) > exceptIndex.get(j)){
+                    int temp = exceptIndex.get(i);
+                    exceptIndex.set(i, exceptIndex.get(j));
+                    exceptIndex.set(j, temp);
+
+                    int temp2 = excludeNumbers.get(i);
+                    excludeNumbers.set(i, excludeNumbers.get(j));
+                    excludeNumbers.set(j, temp2);
+                }
+            }
+        }
+
+        for (int number : numberRange) {
+            if (!excludeNumbers.contains(number)) {
+                availableNumbers.add(number);
+            }
+        }
+
+        // 숫자 섞기
+        Collections.shuffle(availableNumbers, new Random());
+
+        // 제외할 번호를 다시 추가
+        List<Integer> shuffledNumbers = new ArrayList<>();
+
+
+        if(excludeNumbers.size() == 0){
+            for(int i = 0; i<numberRange.length; i++){
+                shuffledNumbers.add(availableNumbers.get(i));
+            }
+        }else{
+            int Eindex = 0;
+            int index = 0;
+
+            for(int i = 0; i<numberRange.length; i++){
+                System.out.println(i + " " + exceptIndex.get(Eindex));
+                if(i == exceptIndex.get(Eindex)){
+                    shuffledNumbers.add(excludeNumbers.get(Eindex));
+                    if(Eindex < exceptIndex.size() - 1) Eindex++;
+                }else{
+                    shuffledNumbers.add(availableNumbers.get(index));
+                    if(index < availableNumbers.size() - 1) index++;
+                }
+
+            }
+        }
+
+        return shuffledNumbers;
+    }
+
+}
+class CustomToggleButton extends JButton {
+    private boolean filled = false;
+    Color fontColor = new Color(0x47815E);
+
+    public CustomToggleButton(String text, String innerText, ArrayList<Integer> fixedNumber) {
+        super(text);
+        setPreferredSize(new Dimension(50, 50));
+        setFocusPainted(false);
+        setContentAreaFilled(false);
+        setBorderPainted(true);
+        setText(innerText);
+
+        addActionListener(new ActionListener() {
+            boolean isColored = false;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                filled = !filled;
+                repaint();
+                if(isColored){
+                    isColored = false;
+                }
+                if(filled){
+
+                }
+                String clikedButton = ((JButton) e.getSource()).getText();
+                if (fixedNumber.contains(Integer.parseInt(clikedButton))) {
+                    fixedNumber.remove(fixedNumber.indexOf(Integer.parseInt(clikedButton)));
+                }else{
+                    fixedNumber.add(Integer.parseInt(clikedButton));
+                }
+
+            }
+        });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    filled = false;
+                    repaint();
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        int diameter = Math.min(getWidth(), getHeight()) - 6;
+        int x = (getWidth() - diameter) / 2;
+        int y = (getHeight() - diameter) / 2;
+
+        g.setColor(fontColor);
+        g.drawOval(x, y, diameter, diameter);
+
+        if (filled) {
+            g.setColor(fontColor);
+            g.fillOval(x, y, diameter, diameter);
+        }
     }
 }
